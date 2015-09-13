@@ -1,7 +1,7 @@
 /**
  * A simplistic (although not exact) implementation of a commonjs module specification
+ * @param global The global javascript object
  */
-
 (function(global) {
   // Utility Functions -----------------------------------------------------------------------------
   function startsWith(str, search) {
@@ -17,12 +17,16 @@
   // Require related functionality -----------------------------------------------------------------
   var registry = {}, // Stores all the loaded modules keyed with their id
       Lookup = global.Lookup, // ModuleResource finder
-      globalModules = global.modules || {};
+      globalModules = global.modules || {},
+      globalTypes = global.moduleTypes || {},
+      Java = global.Java;
       
       
   // Disallow other scripts to access the ModuleResource finder and global modules directly
   delete global.Lookup;
   delete global.modules;
+  delete global.types;
+  delete global.Java;
 
   var Require = {
     /**
@@ -68,6 +72,15 @@
           exports: mod
         });
       }
+      
+      if(!mod && (mod = globalTypes[id])) {
+        mod = Require.registerModule({
+          id: id,
+          uri: "type:" + id,
+          exports: Java.type(id)
+        });
+      }
+      
       return mod;
     },
     

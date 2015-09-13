@@ -36,6 +36,7 @@ public class RequireJsRunner {
   private ScriptEngine engine;
   private Bindings engineVars;
   private Map<String, Object> modules = new HashMap<>();
+  private Map<String, String> types = new HashMap<>();
   
   public RequireJsRunner(URL basePath) {
     this(basePath, new HashMap<>());
@@ -51,6 +52,10 @@ public class RequireJsRunner {
   
   public void registerModule(String moduleId, Object module) {
     this.modules.put(moduleId, module);
+  }
+  
+  public void registerModuleType(String fqcn) {
+    this.types.put(fqcn, fqcn);
   }
   
   /**
@@ -112,12 +117,9 @@ public class RequireJsRunner {
     ScriptContext ctx = engine.getContext();
     engineVars = ctx.getBindings(ScriptContext.ENGINE_SCOPE);
 
-    // Restrict scripts to only use javascript and require (sandbox)
-    engineVars.remove("Java");
-    engineVars.remove("load");
-    
-    // Add global modules
+    // Add global modules and types
     engineVars.put("modules", modules);
+    engineVars.put("moduleTypes", types);
     
     // Add a script module info finder
     engineVars.put("Lookup", (ModuleResourceLookup) (modId) -> {
@@ -125,6 +127,10 @@ public class RequireJsRunner {
     });
     
     loadRequireJs();
+    
+    // Restrict scripts to only use javascript and require (sandbox)
+    engineVars.remove("Java");
+    engineVars.remove("load");
   }
   
   private void loadRequireJs() {
