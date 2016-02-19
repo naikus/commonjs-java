@@ -38,10 +38,29 @@ public class RequireJsRunner {
   private Map<String, Object> modules = new HashMap<>();
   private Map<String, String> types = new HashMap<>();
   
+  /**
+   * Creates a new RequireJsRunner that will look for js files a the specified basePath
+   * @param basePath The URL at which the runner will look for js scripts
+   */
   public RequireJsRunner(URL basePath) {
     this(basePath, new HashMap<>());
   }
   
+  /**
+   * Creates a new RequireJsRunner for the specified base path and additional runtime modules.
+   * The <tt>modules</tt> map contains realized module objects keyed in by their module paths.
+   * e.g. 
+   * <pre>
+   * {
+   *    "system/logger" : myJavaLoggerObject,
+   *    "some/othermodule": myOtherModule
+   *    // etc.
+   * }
+   * </pre>
+   * @param basePath The URL at which to look for modules
+   * @param modules  Additional runtime modules specified in the mapp that will be added to
+   * this class's registry
+   */
   public RequireJsRunner(URL basePath, Map<String, Object> modules) {
     this.loader = new ModuleResourceLoader(basePath);
     
@@ -50,10 +69,29 @@ public class RequireJsRunner {
     this.initialize();
   }
   
+  /**
+   * Register a runtime module with this runner
+   * @param moduleId The id of he module e.g. "system/logger"
+   * @param module The module object that will be available via require("system/logger") in
+   * js scripts
+   */
   public void registerModule(String moduleId, Object module) {
     this.modules.put(moduleId, module);
   }
   
+  /**
+   * This registers a module class that can be 'new'ed in your scripts.
+   * e.g.
+   * <pre>
+   *    // In your java code, register your StringTemplate class
+   *    runner.registerModuleType("com.example.util.StringTemplate");
+   * 
+   *    // In your scripts you can now do this:
+   *    var StringTemplate = require("com.example.util.StringTemplate");
+   *    var myTemplate = new StringTemplate("Hello, {user}");
+   * </pre>
+   * @param fqcn The fully qualified class name of the module
+   */
   public void registerModuleType(String fqcn) {
     this.types.put(fqcn, fqcn);
   }
